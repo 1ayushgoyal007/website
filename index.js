@@ -6,6 +6,7 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.set("view engine","ejs"); 
 app.use(express.static(__dirname+"/public"));
 var User = require('./models/user');
+var flash = require("connect-flash");
 
 
 
@@ -22,15 +23,20 @@ app.use(require("express-session")({
     saveUninitialized:false
 }));
 
+
+
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(function(req,res,next){
+    res.locals.currentUser = req.user;
+    res.locals.current = req.User;
+    next();
+})
+
 passport.use(new localStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
-
-
-
-
 
 
 
@@ -44,11 +50,11 @@ app.get('/about',function(req,res){
     res.render('about');
 })
 
-app.get('/sign-up',function(req,res){
+app.get('/sign-up',isLoggedOut,isLoggedIn,function(req,res){
     res.render('sign-up');
 })
 
-app.post('/sign-up',function(req,res){
+app.post('/sign-up',isLoggedOut,isLoggedIn,function(req,res){
     var newUser = new User({ username:req.body.username,name:req.body.name});
     User.register(newUser,req.body.password,function(err,user){
         if(err){
@@ -62,19 +68,20 @@ app.post('/sign-up',function(req,res){
     })
 })
 
-app.get('/login',function(req,res){
+app.get('/login',isLoggedOut,function(req,res){
     res.render('login');
 });
 
-app.post('/login',passport.authenticate('local',{
+app.post('/login',isLoggedOut,passport.authenticate('local',{
     successRedirect:'/',
     failureRedirect:'back'
 }),function(req,res){
     //DO NOTHING
+
 });
 
 
-app.get('/logout',function(req,res){
+app.get('/logout',isLoggedIn,isLoggedIn,function(req,res){
     req.logOut();
     res.redirect('/');
 })
@@ -83,7 +90,7 @@ app.get('/logout',function(req,res){
 
 
 
-app.get('/contact',function(req,res){
+app.get('/contact',isLoggedIn,function(req,res){
     res.render('contact');
 })
 
@@ -104,6 +111,27 @@ app.post('/contact',function(req,res){
 app.get('*',function(req,res){
     res.render('default');
 });
+
+
+
+
+function isLoggedIn(req,res,next){
+    if(req.isAuthenticated()){
+        return next();
+    }
+    else{
+        res.redirect("/login");
+    }
+}
+
+function isLoggedOut(req,res,next){
+    if(! req.isAuthenticated()){
+        return next();
+    }else{
+        res.redirect('back');
+    }
+}
+
 
 app.set("port", process.env.PORT || 5000);
 app.listen(app.get("port"), function(req,res){
