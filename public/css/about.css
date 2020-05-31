@@ -1,0 +1,7 @@
+.header{
+    background-image:linear-gradient(rgba(0, 168, 255, 0.3),rgba(0, 168, 255, 0.3)), url('/images/aabout.jpg');
+    background-size: cover;
+    clip-path: polygon(100% 0%,100% 100%, 0% 50%, 0 0);
+    background-position: center;
+
+}
