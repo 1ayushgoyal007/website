@@ -50,11 +50,11 @@ app.get('/about',function(req,res){
     res.render('about');
 })
 
-app.get('/sign-up',isLoggedOut,isLoggedIn,function(req,res){
+app.get('/sign-up',isLoggedOut,function(req,res){
     res.render('sign-up');
 })
 
-app.post('/sign-up',isLoggedOut,isLoggedIn,function(req,res){
+app.post('/sign-up',isLoggedOut,function(req,res){
     var newUser = new User({ username:req.body.username,name:req.body.name});
     User.register(newUser,req.body.password,function(err,user){
         if(err){
