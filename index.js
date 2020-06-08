@@ -7,7 +7,8 @@ app.set("view engine","ejs");
 app.use(express.static(__dirname+"/public"));
 var User = require('./models/user');
 var flash = require("connect-flash");
-
+var nodemailer = require('nodemailer')
+var mailgun = require('nodemailer-mailgun-transport');
 
 
 //Auth Implementation--------------------------------------------
@@ -86,8 +87,17 @@ app.get('/logout',isLoggedIn,isLoggedIn,function(req,res){
     res.redirect('/');
 })
 
+//Contact Stuff==========================================================
 
+console.log(process.env);
+var auth  = {
+    auth:{
+        api_key:'API_KEY',
+        domain:'DOMAIN'
+    }
+};
 
+var transporter = nodemailer.createTransport(mailgun(auth));
 
 
 app.get('/contact',isLoggedIn,function(req,res){
@@ -95,13 +105,27 @@ app.get('/contact',isLoggedIn,function(req,res){
 })
 
 app.post('/contact',function(req,res){
-    var contact = {
-           name: req.body.username,
-           email: req.body.email,
-           phone: req.body.number,
-           message:req.body.message
-    }
-    res.send('you did it.')
+
+    var mailOptions = {
+        from: req.body.email,
+        to : '1ayushgoyal007@gmail.com',
+        subject: req.body.subject,
+        text: req.body.message
+    };
+
+    console.log(mailOptions);
+
+    transporter.sendMail(mailOptions,function(err,data){
+        if(err){
+            console.log(err);
+            console.log("error while sending email");
+            res.redirect('back');
+        }else{
+            console.log('message sent');
+            res.redirect('/');
+        }
+    });
+
 })
 
 
